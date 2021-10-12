@@ -45,7 +45,7 @@ namespace RestAPI.Services
 
             if (_apiKeySettings.ApiKeyLimit < allKeys.Count() + 1)
             {
-                throw new BadHttpRequestException($"Api key limit is reached", 200);
+                throw new BadHttpRequestException($"Api key limit is reached", 400);
             }
 
             var apiKey = new ApiKeyReadModel
