@@ -24,18 +24,18 @@ namespace RestAPI.Controllers
         {
             _apikeyService = apikeyService;
         }
-        
+
         [HttpPost]
         public async Task<ActionResult<ApiKeyResponse>> Create(ApiKeyRequest request)
         {
             try
             {
                 var apiKey = await _apikeyService.CreateApiKey(request.Username, request.Password);
-                
+
                 return new ApiKeyResponse
                 {
                     Id = apiKey.Id,
-                    ApiKey = apiKey.Key,
+                    ApiKey = apiKey.ApiKey,
                     UserId = apiKey.UserId,
                     IsActive = apiKey.IsActive,
                     DateCreated = apiKey.DateCreated,
@@ -61,11 +61,11 @@ namespace RestAPI.Controllers
             try
             {
                 var apiKeys = await _apikeyService.GetAllApiKeys(username, password);
-            
+
                 return Ok(apiKeys.Select(apiKey => new ApiKeyResponse
                 {
                     Id = apiKey.Id,
-                    ApiKey = apiKey.Key,
+                    ApiKey = apiKey.ApiKey,
                     UserId = apiKey.UserId,
                     IsActive = apiKey.IsActive,
                     DateCreated = apiKey.DateCreated,
@@ -84,7 +84,7 @@ namespace RestAPI.Controllers
                 }
             }
         }
-        
+
         [HttpPut]
         [Route("{id}/isActive")]
         public async Task<ActionResult<ApiKeyResponse>> UpdateKeyState(Guid id, UpdateKeyStateRequest request)
@@ -92,11 +92,11 @@ namespace RestAPI.Controllers
             try
             {
                 var apiKey = await _apikeyService.UpdateApiKeyState(id, request.IsActive);
-        
+
                 return new ApiKeyResponse
                 {
                     Id = apiKey.Id,
-                    ApiKey = apiKey.Key,
+                    ApiKey = apiKey.ApiKey,
                     UserId = apiKey.UserId,
                     IsActive = request.IsActive,
                     DateCreated = apiKey.DateCreated,

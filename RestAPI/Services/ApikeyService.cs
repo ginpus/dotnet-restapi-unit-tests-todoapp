@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Persistence.Models.ReadModels;
 using Persistence.Repositories;
+using RestAPI.Extensions;
 using RestAPI.Models;
 using RestAPI.Options;
 
@@ -18,7 +19,7 @@ namespace RestAPI.Services
         private readonly ApiKeySettings _apiKeySettings;
 
         public ApikeyService(
-            IUserRepository userRepository, 
+            IUserRepository userRepository,
             IApiKeysRepository apiKeysRepository,
             IOptions<ApiKeySettings> apiKeySettings)
         {
@@ -26,8 +27,8 @@ namespace RestAPI.Services
             _apiKeysRepository = apiKeysRepository;
             _apiKeySettings = apiKeySettings.Value;
         }
-        
-        public async Task<ApiKey> CreateApiKey(string username, string password)
+
+        public async Task<ApiKeyModel> CreateApiKey(string username, string password)
         {
             var user = await _userRepository.GetAsync(username);
 
@@ -60,64 +61,48 @@ namespace RestAPI.Services
 
             await _apiKeysRepository.SaveAsync(apiKey);
 
-            return new ApiKey
-            {
-                Id = apiKey.Id,
-                Key = apiKey.ApiKey,
-                UserId = apiKey.UserId,
-                IsActive = apiKey.IsActive,
-                DateCreated = apiKey.DateCreated,
-                ExpirationDate = apiKey.ExpirationDate
-            };
+            return apiKey.MapToApiKey();
         }
 
-        public async Task<IEnumerable<ApiKey>> GetAllApiKeys(string username, string password)
+        public async Task<IEnumerable<ApiKeyModel>> GetAllApiKeys(string username, string password)
         {
             var user = await _userRepository.GetAsync(username);
-        
+
             if (user is null)
             {
                 throw new BadHttpRequestException($"User with Username: '{username}' does not exists!", 404);
             }
-        
+
             if (!user.Password.Equals(password))
             {
                 throw new BadHttpRequestException($"Wrong password for user: '{user.Username}'", 400);
             }
-        
+
             var apiKeys = await _apiKeysRepository.GetByUserIdAsync(user.Id);
 
-            return apiKeys.Select(apiKey => new ApiKey
-            {
-                Id = apiKey.Id,
-                Key = apiKey.ApiKey,
-                UserId = apiKey.UserId,
-                IsActive = apiKey.IsActive,
-                DateCreated = apiKey.DateCreated,
-                ExpirationDate = apiKey.ExpirationDate
-            });
+            return apiKeys.Select(apiKey => apiKey.MapToApiKey());
         }
 
-        public async Task<ApiKey> UpdateApiKeyState(Guid id, bool newState)
+        public async Task<ApiKeyModel> UpdateApiKeyState(Guid id, bool newState)
         {
             var apiKey = await _apiKeysRepository.GetByApiKeyIdAsync(id);
-        
+
             if (apiKey is null)
             {
                 throw new BadHttpRequestException($"Api key with Id: '{id}' does not exists", 404);
             }
-        
+
             await _apiKeysRepository.UpdateIsActive(id, newState);
 
-            return new ApiKey
+            return new ApiKeyModel
             {
                 Id = apiKey.Id,
-                Key = apiKey.ApiKey,
+                ApiKey = apiKey.ApiKey,
                 UserId = apiKey.UserId,
                 IsActive = newState,
                 DateCreated = apiKey.DateCreated,
                 ExpirationDate = apiKey.ExpirationDate
-            };;
+            }; ;
         }
     }
 }

@@ -7,10 +7,10 @@ namespace RestAPI.Services
 {
     public interface IApikeyService
     {
-        Task<ApiKey> CreateApiKey(string username, string password);
+        Task<ApiKeyModel> CreateApiKey(string username, string password);
 
-        Task<IEnumerable<ApiKey>> GetAllApiKeys(string username, string password);
+        Task<IEnumerable<ApiKeyModel>> GetAllApiKeys(string username, string password);
 
-        Task<ApiKey> UpdateApiKeyState(Guid id, bool newState);
+        Task<ApiKeyModel> UpdateApiKeyState(Guid id, bool newState);
     }
 }

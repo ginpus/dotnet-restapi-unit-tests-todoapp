@@ -20,23 +20,7 @@ namespace RestAPI.UnitTests.Services
 
     public class ApikeyService_Should
     {
-        // public async Task TestCreate()
-        // {
-        //     var apiKeySettingsMock = new Mock<IOptions<ApiKeySettings>>();
-        //
-        //     var apiKeySettings = new ApiKeySettings
-        //     {
-        //         ExpirationTimeInMinutes = 455,
-        //         ApiKeyLimit = 54
-        //     };
-        //
-        //     apiKeySettingsMock
-        //         .SetupGet(apiKeySettings => apiKeySettings.Value)
-        //         .Returns(apiKeySettings);
-        //
-        //     var apiKeyService = new ApikeyService(new UsersRepository(), new ApiKeysRepository(), apiKeySettingsMock.Object);
-        // }
-
+        //-------------------------CreateApiKey------------------------------------
         [Theory, AutoMoqData]
         public async Task CreateApiKey_ReturnsBadHttpException_When_UserIsNull(
             string username,
@@ -189,6 +173,97 @@ namespace RestAPI.UnitTests.Services
 
             result.UserId.Should().Be(userReadModel.Id);
             result.IsActive.Should().BeTrue();
+        }
+        //-------------------------GetAllApiKeys------------------------------------
+        [Theory, AutoMoqData]
+        public async Task GetAllApiKeys_ReturnsBadHttpException_When_UserIsNull(
+            string username,
+            string password,
+            [Frozen] Mock<IUserRepository> userRepositoryMock,
+            ApikeyService sut)
+        {
+
+            //Arrange 
+            userRepositoryMock
+                .Setup(mock => mock.GetAsync(It.IsAny<string>()))
+                .ReturnsAsync((UserReadModel)null); // when GetAsync method will be called with any string, we want for the method to return null UserReadModel
+
+            // Act & Assert
+            var result = await sut
+                .Invoking(sut => sut.GetAllApiKeys(username, password))
+                .Should().ThrowAsync<BadHttpRequestException>()
+                .WithMessage($"User with Username: '{username}' does not exists!");
+
+            result.Which.StatusCode.Should().Be(404);
+
+            // Assert 
+            userRepositoryMock
+                .Verify(mock => mock
+                .GetAsync(It.Is<string>(value => value.Equals(username))), Times.Once);
+
+        }
+
+        [Theory, AutoMoqData]
+        public async Task GetAllApiKeys_ReturnsBadHttpException_When_WrongPassword(
+            string username,
+            string password,
+            UserReadModel userReadModel,
+            [Frozen] Mock<IUserRepository> userRepositoryMock,
+            ApikeyService sut)
+        {
+            //Arrange 
+            userRepositoryMock
+                .Setup(mock => mock.GetAsync(It.IsAny<string>()))
+                .ReturnsAsync(userReadModel); // when GetAsync method will be called with any string, we want for the method to return UserReadModel
+
+            // Act & Assert
+            var result = await sut
+                .Invoking(sut => sut.GetAllApiKeys(username, password))
+                .Should().ThrowAsync<BadHttpRequestException>()
+                .WithMessage($"Wrong password for user: '{userReadModel.Username}'");
+
+            result.Which.StatusCode.Should().Be(400);
+
+            // Assert 
+            userRepositoryMock
+                .Verify(mock => mock
+                .GetAsync(It.Is<string>(value => value.Equals(username))), Times.Once);
+
+        }
+
+        [Theory, AutoMoqData]
+        public async Task GetAllApiKeys_When_AllChecks_Pass(
+        UserReadModel userReadModel,
+        IEnumerable<ApiKeyReadModel> apiKeys,
+        [Frozen] Mock<IUserRepository> userRepositoryMock,
+        [Frozen] Mock<IApiKeysRepository> apiKeyRepositoryMock,
+        ApikeyService sut) // required due to bug with AutoMoq
+        {
+            //Arrange 
+
+            userRepositoryMock
+                .Setup(mock => mock.GetAsync(userReadModel.Username))
+                .ReturnsAsync(userReadModel);
+
+            apiKeyRepositoryMock
+                .Setup(mock => mock.GetByUserIdAsync(userReadModel.Id))
+                .ReturnsAsync(apiKeys); // when GetByUserIdAsync method will be called with ID from 'userReadModel', we want for the method to return IEnumerable<ApiKeyReadModel> (of any size, most probably 3)
+
+            // Act & Assert
+
+            var result = await sut.GetAllApiKeys(userReadModel.Username, userReadModel.Password);
+
+            // Assert 
+            userRepositoryMock
+                .Verify(mock => mock
+                .GetAsync(It.IsAny<string>()), Times.Once);
+
+            apiKeyRepositoryMock
+                .Verify(mock => mock
+                .GetByUserIdAsync(It.IsAny<Guid>()), Times.Once);
+
+            result.Should().BeEquivalentTo(apiKeys, options => options.ComparingByMembers<ApiKeyReadModel>());
+
         }
     }
 }
