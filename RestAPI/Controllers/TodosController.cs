@@ -18,18 +18,18 @@ namespace RestAPI.Controllers
     {
         private readonly ITodosRepository _todosRepository;
         private readonly IUserRepository _userRepository;
-        
+
         public TodosController(ITodosRepository todosRepository, IUserRepository userRepository)
         {
             _todosRepository = todosRepository;
             _userRepository = userRepository;
         }
-        
+
         [HttpGet]
         public async Task<IEnumerable<TodosItemResponse>> GetAll()
         {
-            var userId = (Guid) HttpContext.Items["userId"];
-            
+            var userId = (Guid)HttpContext.Items["userId"];
+
             var todos = await _todosRepository.GetAllAsync(userId);
 
             return todos.Select(todo => todo.MapToTodoItemResponse());
@@ -39,10 +39,10 @@ namespace RestAPI.Controllers
         [Route("{id}")]
         public async Task<ActionResult<TodosItemResponse>> Get(Guid id)
         {
-            var userId = (Guid) HttpContext.Items["userId"];
-            
+            var userId = (Guid)HttpContext.Items["userId"];
+
             var todoItem = await _todosRepository.GetAsync(id, userId);
-            
+
             if (todoItem is null)
             {
                 return NotFound($"Todo item with id: '{id}' does not exist");
@@ -54,7 +54,7 @@ namespace RestAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<TodosItemResponse>> Create(CreateTodoItemRequest request)
         {
-            var userId = (Guid) HttpContext.Items["userId"];
+            var userId = (Guid)HttpContext.Items["userId"];
 
             var todoItemReadModel = new TodoItemReadModel
             {
@@ -81,7 +81,7 @@ namespace RestAPI.Controllers
         [Route("{id}")]
         public async Task<ActionResult<TodosItemResponse>> Update(Guid id, UpdateTodoItemRequest request)
         {
-            var userId = (Guid) HttpContext.Items["userId"];
+            var userId = (Guid)HttpContext.Items["userId"];
 
             var todoItem = await _todosRepository.GetAsync(id, userId);
 
@@ -89,7 +89,7 @@ namespace RestAPI.Controllers
             {
                 return NotFound($"Todo item with id: '{id}' does not exist");
             }
-            
+
             todoItem.Title = request.Title;
             todoItem.Description = request.Description;
 
@@ -102,7 +102,7 @@ namespace RestAPI.Controllers
         [Route("{id}/toggleStatus")]
         public async Task<ActionResult<TodosItemResponse>> UpdateStatus(Guid id)
         {
-            var userId = (Guid) HttpContext.Items["userId"];
+            var userId = (Guid)HttpContext.Items["userId"];
 
             var todoItem = await _todosRepository.GetAsync(id, userId);
 
@@ -112,18 +112,18 @@ namespace RestAPI.Controllers
             }
 
             todoItem.IsDone = !todoItem.IsDone;
-            
+
             await _todosRepository.SaveOrUpdateAsync(todoItem);
 
             return todoItem.MapToTodoItemResponse();
         }
-        
+
 
         [HttpDelete]
         [Route("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var userId = (Guid) HttpContext.Items["userId"];
+            var userId = (Guid)HttpContext.Items["userId"];
 
             var todoItem = await _todosRepository.GetAsync(id, userId);
 
@@ -131,7 +131,7 @@ namespace RestAPI.Controllers
             {
                 return NotFound($"Todo item with id: '{id}' does not exist");
             }
-            
+
             await _todosRepository.DeleteAsync(id);
 
             return NoContent();
