@@ -265,5 +265,64 @@ namespace RestAPI.UnitTests.Services
             result.Should().BeEquivalentTo(apiKeys, options => options.ComparingByMembers<ApiKeyReadModel>());
 
         }
+        //-------------------------UpdateApiKeyState------------------------------------
+        [Theory, AutoMoqData]
+        public async Task UpdateApiKeyState_ReturnsBadHttpException_When_UserApiKeyIsNull(
+            Guid id,
+            [Frozen] Mock<IApiKeysRepository> apiKeyRepositoryMock,
+            ApikeyService sut)
+        {
+
+            //Arrange 
+            apiKeyRepositoryMock
+                .Setup(mock => mock.GetByApiKeyIdAsync(id))
+                .ReturnsAsync((ApiKeyReadModel)null);
+
+            // Act & Assert
+            var result = await sut
+                .Invoking(sut => sut.UpdateApiKeyState(id, It.IsAny<bool>()))
+                .Should().ThrowAsync<BadHttpRequestException>()
+                .WithMessage($"Api key with Id: '{id}' does not exists");
+
+            result.Which.StatusCode.Should().Be(404);
+
+            // Assert 
+            apiKeyRepositoryMock
+                .Verify(mock => mock
+                .GetByApiKeyIdAsync(It.Is<Guid>(value => value.Equals(id))), Times.Once);
+
+        }
+
+        [Theory, AutoMoqData]
+        public async Task UpdateApiKeyState_ReturnsBadHttpException_When_AllChecks_Pass(
+            Guid id,
+            bool newState,
+            ApiKeyReadModel apiKeyReadModel,
+            [Frozen] Mock<IApiKeysRepository> apiKeyRepositoryMock,
+            ApikeyService sut)
+        {
+
+            //Arrange 
+            apiKeyRepositoryMock
+                .Setup(mock => mock.GetByApiKeyIdAsync(id))
+                .ReturnsAsync(apiKeyReadModel);
+
+            apiKeyReadModel.IsActive = newState;
+
+            // Assert
+            var result = await sut.UpdateApiKeyState(id, newState);
+
+            // Assert 
+            apiKeyRepositoryMock
+                .Verify(mock => mock
+                .GetByApiKeyIdAsync(It.IsAny<Guid>()), Times.Once);
+
+            apiKeyRepositoryMock
+                .Verify(mock => mock
+                .UpdateIsActive(It.Is<Guid>(value => value.Equals(id)), It.Is<bool>(value => value.Equals(newState))), Times.Once);
+
+            result.Should().BeEquivalentTo(apiKeyReadModel);
+
+        }
     }
 }

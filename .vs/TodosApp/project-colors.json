@@ -1,0 +1,21 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "09a44f2e-f9d4-4052-8aab-ee92e27bb5af": {
+      "ProjectGuid": "09a44f2e-f9d4-4052-8aab-ee92e27bb5af",
+      "DisplayName": "RestAPI",
+      "ColorIndex": 0
+    },
+    "9b06257d-b945-470b-a586-3fbb5caba199": {
+      "ProjectGuid": "9b06257d-b945-470b-a586-3fbb5caba199",
+      "DisplayName": "RestAPI.UnitTests",
+      "ColorIndex": 1
+    },
+    "008b3959-83a0-4a76-971f-60f3c5dffb6e": {
+      "ProjectGuid": "008b3959-83a0-4a76-971f-60f3c5dffb6e",
+      "DisplayName": "Persistence",
+      "ColorIndex": 2
+    }
+  },
+  "NextColorIndex": 3
+}

@@ -102,7 +102,7 @@ namespace RestAPI.Services
                 IsActive = newState,
                 DateCreated = apiKey.DateCreated,
                 ExpirationDate = apiKey.ExpirationDate
-            }; ;
+            };
         }
     }
 }
