@@ -15,7 +15,22 @@
       "ProjectGuid": "008b3959-83a0-4a76-971f-60f3c5dffb6e",
       "DisplayName": "Persistence",
       "ColorIndex": 2
+    },
+    "a33e9456-51e7-451f-90d9-31fe59b763c3": {
+      "ProjectGuid": "a33e9456-51e7-451f-90d9-31fe59b763c3",
+      "DisplayName": "TestHelpers",
+      "ColorIndex": 3
+    },
+    "a48708e4-9896-4d18-a0ac-2d134d89f7f1": {
+      "ProjectGuid": "a48708e4-9896-4d18-a0ac-2d134d89f7f1",
+      "DisplayName": "Contracts",
+      "ColorIndex": 4
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Miscellaneous Files",
+      "ColorIndex": -1
     }
   },
-  "NextColorIndex": 3
+  "NextColorIndex": 5
 }

@@ -26,13 +26,13 @@ namespace RestAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<TodosItemResponse>> GetAll()
+        public async Task<ActionResult<IEnumerable<TodosItemResponse>>> GetAll()
         {
             var userId = (Guid)HttpContext.Items["userId"];
 
             var todos = await _todosRepository.GetAllAsync(userId);
 
-            return todos.Select(todo => todo.MapToTodoItemResponse());
+            return Ok(todos.Select(todo => todo.MapToTodoItemResponse()));
         }
 
         [HttpGet]
@@ -48,7 +48,7 @@ namespace RestAPI.Controllers
                 return NotFound($"Todo item with id: '{id}' does not exist");
             }
 
-            return todoItem.MapToTodoItemResponse();
+            return Ok(todoItem.MapToTodoItemResponse());
         }
 
         [HttpPost]
@@ -90,12 +90,20 @@ namespace RestAPI.Controllers
                 return NotFound($"Todo item with id: '{id}' does not exist");
             }
 
-            todoItem.Title = request.Title;
-            todoItem.Description = request.Description;
+            var updatedTodoItem = new TodoItemReadModel
+            {
+                Id = todoItem.Id,
+                UserId = todoItem.UserId,
+                Title = request.Title,
+                Description = request.Description,
+                Difficulty = todoItem.Difficulty,
+                IsDone = todoItem.IsDone,
+                DateCreated = todoItem.DateCreated
+            };
 
-            await _todosRepository.SaveOrUpdateAsync(todoItem);
+            await _todosRepository.SaveOrUpdateAsync(updatedTodoItem);
 
-            return todoItem.MapToTodoItemResponse();
+            return updatedTodoItem.MapToTodoItemResponse();
         }
 
         [HttpPatch]
@@ -111,11 +119,20 @@ namespace RestAPI.Controllers
                 return NotFound($"Todo item with id: '{id}' does not exist");
             }
 
-            todoItem.IsDone = !todoItem.IsDone;
+            var updatedTodoItem = new TodoItemReadModel
+            {
+                Id = todoItem.Id,
+                UserId = todoItem.UserId,
+                Title = todoItem.Title,
+                Description = todoItem.Description,
+                Difficulty = todoItem.Difficulty,
+                IsDone = !todoItem.IsDone,
+                DateCreated = todoItem.DateCreated
+            };
 
-            await _todosRepository.SaveOrUpdateAsync(todoItem);
+            await _todosRepository.SaveOrUpdateAsync(updatedTodoItem);
 
-            return todoItem.MapToTodoItemResponse();
+            return updatedTodoItem.MapToTodoItemResponse();
         }
 
 
